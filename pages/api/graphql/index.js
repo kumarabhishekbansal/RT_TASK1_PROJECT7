@@ -1,7 +1,7 @@
 import { graphqlHTTP } from "express-graphql";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { addMocksToSchema } from "@graphql-tools/mock";
-
+import { loginUser, isTokenValid } from "../../../utils/authentication";
 let cart = {
   count: 0,
   products: [],
@@ -33,6 +33,12 @@ const typeDefs = /* GraphQL */ `
   }
   type Mutation {
     addToCart(productId: Int!): Cart
+    loginUser(username: String!, password: String!): User
+    completeCart: Cart
+  }
+  type User {
+    username: String!
+    token: String!
   }
 `;
 
@@ -41,6 +47,26 @@ const resolvers = {
     cart: () => cart,
   },
   Mutation: {
+    completeCart: (_, {}, { token }) => {
+      if (token && isTokenValid(token)) {
+        cart = {
+          count: 0,
+          products: [],
+          complete: true,
+        };
+
+        return cart;
+      }
+    },
+    loginUser: async (_, { username, password }) => {
+      console.log(username, "before");
+      const user = loginUser(username, password);
+      console.log(username, "after");
+      if (user) {
+        console.log(user);
+        return user;
+      }
+    },
     addToCart: (_, { productId }) => {
       cart = {
         ...cart,
@@ -73,6 +99,10 @@ const executableSchema = addMocksToSchema({
   schema: makeExecutableSchema({ typeDefs }),
   mocks,
   resolvers,
+  context: ({ req }) => {
+    const token = req.headers.authorization || "";
+    return token;
+  },
 });
 
 function runMiddleware(req, res, fn) {

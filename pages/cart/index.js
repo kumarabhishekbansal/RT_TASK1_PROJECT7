@@ -2,13 +2,22 @@ import styled from "styled-components";
 import SubHeader from "../../components/SubHeader";
 import ProductItem from "../../components/ProductItem";
 import Button from "../../components/Button";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
+import { useRouter } from "next/router";
 const CartWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   flex-direction: column;
   margin: 2% 5%;
+`;
+
+const COMPLETE_CART = gql`
+  mutation completeCart {
+    completeCart {
+      complete
+    }
+  }
 `;
 
 const CartItemsWrapper = styled.div`
@@ -33,6 +42,7 @@ const GET_CART = gql`
 
 function Cart() {
   const { loading, data } = useQuery(GET_CART);
+  const [completeCard] = useMutation(COMPLETE_CART);
   return (
     <>
       <SubHeader title="Cart" />
@@ -47,9 +57,21 @@ function Cart() {
                 <ProductItem key={product.id} data={product} />
               ))}
           </CartItemsWrapper>
-          {data && data.cart.products.length > 0 && (
-            <Button backgroundColor="royalBlue">Checkout</Button>
-          )}
+          {data &&
+            data.cart.products.length > 0 &&
+            sessionStorage.getItem("token") && (
+              <Button
+                backgroundColor="royalBlue"
+                onClick={() => {
+                  const isAuthenticated = sessionStorage.getItem("token");
+                  if (isAuthenticated) {
+                    completeCard();
+                  }
+                }}
+              >
+                Checkout
+              </Button>
+            )}
         </CartWrapper>
       )}
     </>

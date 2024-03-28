@@ -9,6 +9,7 @@ const user = {
 const jwtSecret = '34%%##@#FGFKFL';
 
 export function loginUser(username, password) {
+  console.log(username ,"medium");
   if (user.username === username) {
     const isValid = Bcrypt.compareSync(password, user.password);
     if (isValid) {
