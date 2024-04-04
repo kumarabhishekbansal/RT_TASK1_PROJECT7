@@ -42,7 +42,7 @@ const GET_CART = gql`
 
 function Cart() {
   const { loading, data } = useQuery(GET_CART);
-  const [completeCard] = useMutation(COMPLETE_CART);
+  const [completeCart] = useMutation(COMPLETE_CART);
   return (
     <>
       <SubHeader title="Cart" />
@@ -65,7 +65,7 @@ function Cart() {
                 onClick={() => {
                   const isAuthenticated = sessionStorage.getItem("token");
                   if (isAuthenticated) {
-                    completeCard();
+                    completeCart();
                   }
                 }}
               >
